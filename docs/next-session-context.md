@@ -18,6 +18,26 @@
 - Tema escuro implementado e ajustado.
 - Tema claro refinado para reduzir excesso de branco.
 - Criação de despesa com anexo no mesmo fluxo já implementada.
+- Arquitetura de UI reorganizada para um padrão mais escalável com:
+  - `Tailwind` mantido
+  - componentes em pastas próprias
+  - extração de blocos visuais maiores da tela de despesas
+  - extração de variantes/classes compartilhadas
+- A tela principal de despesas deixou de concentrar quase toda a marcação visual:
+  - `ExpensesSidebar`
+  - `ExpenseFormCard`
+  - `ExpenseDetailsCard`
+- Componentes base também foram reorganizados em pastas próprias, seguindo uma estrutura mais previsível:
+  - `layout/AuthShell`
+  - `ui/PrimaryButton`
+  - `ui/FieldInput`
+  - `ui/FieldSelect`
+  - `ui/FieldTextarea`
+  - `ui/FormField`
+  - `ui/IconButton`
+  - `ui/PanelCard`
+- A decisão tomada foi seguir com a linha:
+  - `Tailwind + componentes por pasta + extração de blocos e variantes`
 
 ## Correções pendentes
 
@@ -192,6 +212,50 @@ Revisar se queremos evoluir o frontend para um padrão mais organizado de UI, ma
 - mais componentes visuais reutilizáveis
 - melhor separação entre layout, comportamento e aparência
 
+### Decisão efetivamente tomada hoje
+
+Essa direção foi confirmada e já começou a ser aplicada.
+
+Seguiremos com:
+
+- `Tailwind`
+- componentes por pasta
+- extração de blocos maiores de interface
+- extração de variantes visuais e classes compartilhadas
+
+Não vamos migrar agora para uma separação tradicional no estilo `tsx + css` para tudo.
+Se houver CSS separado no futuro, será apenas onde fizer sentido real:
+
+- animações
+- temas
+- padrões visuais mais complexos
+- casos em que o JSX ficar menos legível com utilitárias
+
+## Mobile
+
+### Contexto discutido hoje
+
+O mobile não será iniciado agora, mas ficou definido como tema da próxima conversa.
+
+Pontos alinhados:
+
+- existe interesse real em uma versão mobile por utilidade no dia a dia
+- o objetivo não é só custo, mas também estudo e aprendizado
+- o uso em celular e tablet faz sentido para o produto
+- a possibilidade de `iOS` continua em aberto, mesmo sem `Mac`, com limitações práticas no ciclo local
+
+### Direção inicial para a próxima sessão
+
+Conversar sobre o MVP mobile antes de executar.
+
+Assuntos a discutir:
+
+- `React Native` como direção principal
+- suporte a tablet
+- limitações reais para `iOS` sem `Mac`
+- como dividir responsabilidades entre web e mobile
+- o que faz sentido reaproveitar do domínio, da API e da estrutura atual
+
 ## Perguntas para orientar a próxima sessão
 
 - Como deve ser o modelo de `renda` no domínio?
@@ -206,8 +270,9 @@ Revisar se queremos evoluir o frontend para um padrão mais organizado de UI, ma
 
 ## Prioridade sugerida para a próxima sessão
 
-1. Corrigir download de relatório vazio.
-2. Corrigir toast duplicado na criação com anexo.
-3. Revisar a arquitetura de telas e o fluxo principal do produto.
-4. Definir como modelar `renda`, recorrência e visão familiar.
-5. Só depois evoluir design/dashboard com base nessas decisões.
+1. Conversar sobre a frente mobile e delimitar a estratégia inicial do MVP mobile.
+2. Corrigir download de relatório vazio.
+3. Corrigir toast duplicado na criação com anexo.
+4. Revisar ajustes de frontend e UX que ainda ficaram pendentes.
+5. Definir como modelar `renda`, recorrência e visão familiar.
+6. Só depois evoluir design/dashboard com base nessas decisões.

@@ -1,6 +1,6 @@
 import type { PropsWithChildren } from 'react'
 import { Moon, SunMedium } from 'lucide-react'
-import { useTheme } from './theme-provider'
+import { useTheme } from '../../theme-provider'
 
 export function AuthShell({ children }: PropsWithChildren) {
   const { theme, toggleTheme } = useTheme()

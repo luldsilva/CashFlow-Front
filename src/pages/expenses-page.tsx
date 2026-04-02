@@ -2,8 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AxiosError } from 'axios'
 import { useEffect, useMemo, useState } from 'react'
 import type { ChangeEvent } from 'react'
-import { Controller, useForm } from 'react-hook-form'
-import { Receipt, LogOut, Plus, Paperclip, Pencil, Trash2, Moon, SunMedium, FileText, FileSpreadsheet } from 'lucide-react'
+import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import type { z } from 'zod'
 import { useAuth } from '../features/auth/auth-context'
@@ -19,14 +18,12 @@ import {
 } from '../features/expenses/api'
 import { expenseSchema } from '../features/schemas'
 import type { ExpenseDetail, ExpenseFormValues } from '../features/expenses/types'
-import { paymentTypeOptions } from '../features/expenses/types'
-import { FieldInput } from '../components/field-input'
-import { FieldSelect } from '../components/field-select'
-import { FieldTextarea } from '../components/field-textarea'
-import { FormField } from '../components/form-field'
-import { PrimaryButton } from '../components/primary-button'
 import { useToast } from '../components/toast-provider'
 import { useTheme } from '../components/theme-provider'
+import { ExpenseDetailsCard } from '../features/expenses/components/ExpenseDetailsCard'
+import { ExpenseFormCard } from '../features/expenses/components/ExpenseFormCard'
+import { ExpensesSidebar } from '../features/expenses/components/ExpensesSidebar'
+import { expenseShellClass } from '../features/expenses/components/expense-variants'
 
 const emptyValues: ExpenseFormValues = {
   title: '',
@@ -38,17 +35,6 @@ const emptyValues: ExpenseFormValues = {
 
 type ExpenseFormInput = z.input<typeof expenseSchema>
 type ExpenseFormOutput = z.output<typeof expenseSchema>
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-  }).format(value)
-}
-
-function formatDate(date: string) {
-  return new Intl.DateTimeFormat('pt-BR').format(new Date(date))
-}
 
 export function ExpensesPage() {
   const queryClient = useQueryClient()
@@ -250,345 +236,73 @@ export function ExpensesPage() {
   }
 
   return (
-    <main
-      className="min-h-screen px-4 py-5 text-slate-900 transition-colors dark:text-slate-100 md:px-6"
-      style={shellBackground}
-    >
+    <main className={expenseShellClass} style={shellBackground}>
       <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[320px_1fr_360px]">
-        <aside className="rounded-[2rem] border border-emerald-200/80 bg-[#eef6f1]/88 p-5 shadow-lg shadow-emerald-950/5 backdrop-blur transition-colors dark:border-slate-800 dark:bg-slate-900/80 dark:shadow-black/10">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-xs uppercase tracking-[0.24em] text-emerald-700 dark:text-emerald-300">Workspace</p>
-              <h1 className="mt-3 text-2xl font-semibold dark:text-white">CashFlow</h1>
-              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                Bem-vindo de volta, <span className="font-semibold text-slate-700 dark:text-slate-200">{user?.name}</span>.
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                className="cursor-pointer rounded-xl border border-slate-200 p-2 text-slate-500 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-800 dark:hover:text-white"
-                onClick={toggleTheme}
-                type="button"
-                title={theme === 'dark' ? 'Ativar tema claro' : 'Ativar tema escuro'}
-              >
-                {theme === 'dark' ? <SunMedium size={18} /> : <Moon size={18} />}
-              </button>
-              <button
-                className="cursor-pointer rounded-xl border border-slate-200 p-2 text-slate-500 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-800 dark:hover:text-white"
-                onClick={logout}
-                type="button"
-                title="Sair"
-              >
-                <LogOut size={18} />
-              </button>
-            </div>
-          </div>
+        <ExpensesSidebar
+          expenses={expensesQuery.data ?? []}
+          isLoading={expensesQuery.isLoading}
+          onCreateNew={() => {
+            setSelectedExpenseId(null)
+            setEditingExpense(null)
+            setAttachmentFile(null)
+            reset(emptyValues)
+            pushToast('Formulário preparado para uma nova despesa.', 'info')
+          }}
+          onLogout={logout}
+          onSelectExpense={(id) => {
+            setSelectedExpenseId(id)
+            setEditingExpense(null)
+          }}
+          onToggleTheme={toggleTheme}
+          selectedExpenseId={selectedExpenseId}
+          theme={theme}
+          totalSpent={totalSpent}
+          userName={user?.name}
+        />
 
-          <div className="mt-6 rounded-3xl bg-slate-950 p-5 text-white shadow-lg shadow-slate-950/10 dark:bg-slate-800">
-            <p className="text-xs uppercase tracking-[0.24em] text-emerald-200">Total gasto</p>
-            <p className="mt-3 text-3xl font-semibold">{formatCurrency(totalSpent)}</p>
-            <p className="mt-2 text-sm text-slate-300">
-              {expensesQuery.data?.length ?? 0} despesa{expensesQuery.data?.length === 1 ? '' : 's'} registrada{expensesQuery.data?.length === 1 ? '' : 's'}.
-            </p>
-          </div>
+        <ExpenseFormCard
+          attachmentFile={attachmentFile}
+          control={control}
+          editingExpense={editingExpense}
+          errors={errors}
+          handleSubmit={handleSubmit}
+          isBusy={createMutation.isPending || updateMutation.isPending || attachmentMutation.isPending}
+          isSubmitting={isSubmitting}
+          onAttachmentSelect={(event) => setAttachmentFile(event.target.files?.[0] ?? null)}
+          onCancelEdit={() => {
+            setEditingExpense(null)
+            setAttachmentFile(null)
+            reset(emptyValues)
+            pushToast('Edição cancelada.', 'info')
+          }}
+          onSubmit={onSubmit}
+          register={register}
+        />
 
-          <div className="mt-6">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Despesas</h2>
-              <button
-                className="inline-flex cursor-pointer items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800 transition hover:bg-emerald-200"
-                onClick={() => {
-                  setSelectedExpenseId(null)
-                  setEditingExpense(null)
-                  setAttachmentFile(null)
-                  reset(emptyValues)
-                  pushToast('Formulário preparado para uma nova despesa.', 'info')
-                }}
-                type="button"
-                title="Nova despesa"
-              >
-                <Plus size={14} />
-                Nova
-              </button>
-            </div>
+        <ExpenseDetailsCard
+          expense={selectedExpenseQuery.data}
+          isLoading={selectedExpenseQuery.isLoading}
+          onAttachmentUpload={handleAttachmentChange}
+          onDelete={async () => {
+            if (!selectedExpenseQuery.data) {
+              return
+            }
 
-            <div className="grid gap-2">
-              {expensesQuery.data?.map((expense) => (
-                <button
-                  className={`cursor-pointer rounded-2xl border px-4 py-3 text-left transition hover:-translate-y-0.5 hover:shadow-md ${
-                    selectedExpenseId === expense.id
-                      ? 'border-emerald-300 bg-emerald-50 shadow-sm shadow-emerald-950/5 dark:border-emerald-500/60 dark:bg-emerald-500/10'
-                      : 'border-slate-200/80 bg-[#f8fbf9]/76 hover:border-slate-300 hover:bg-[#fcfdfc]/92 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-slate-600'
-                  }`}
-                  key={expense.id}
-                  onClick={() => {
-                    setSelectedExpenseId(expense.id)
-                    setEditingExpense(null)
-                  }}
-                  type="button"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="font-semibold text-slate-900 dark:text-white">{expense.title}</p>
-                      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{formatCurrency(expense.amount)}</p>
-                    </div>
-                    <Receipt className="text-slate-400 dark:text-slate-500" size={18} />
-                  </div>
-                </button>
-              ))}
-
-              {expensesQuery.isLoading ? <p className="text-sm text-slate-500 dark:text-slate-400">Carregando despesas...</p> : null}
-              {!expensesQuery.isLoading && !expensesQuery.data?.length ? (
-                <p className="rounded-2xl border border-dashed border-slate-200 px-4 py-6 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
-                  Nenhuma despesa ainda. Cadastre a primeira usando o formulário.
-                </p>
-              ) : null}
-            </div>
-          </div>
-        </aside>
-
-        <section className="rounded-[2rem] border border-amber-200/80 bg-[#f7f1e6]/88 p-5 shadow-lg shadow-amber-950/5 backdrop-blur transition-colors dark:border-slate-800 dark:bg-slate-900/80 dark:shadow-black/10">
-          <div className="mb-6">
-            <p className="text-xs uppercase tracking-[0.24em] text-amber-600 dark:text-amber-300">
-              {editingExpense ? 'Editar despesa' : 'Nova despesa'}
-            </p>
-            <h2 className="mt-2 text-2xl font-semibold text-slate-950 dark:text-white">
-              {editingExpense ? editingExpense.title : 'Cadastrar uma nova despesa'}
-            </h2>
-          </div>
-
-          <form className="grid gap-4 md:grid-cols-2" onSubmit={handleSubmit(onSubmit)}>
-            <FormField label="Título" error={errors.title?.message}>
-              <FieldInput placeholder="Mercado, Uber, Netflix..." {...register('title')} />
-            </FormField>
-
-            <FormField label="Valor" error={errors.amount?.message}>
-              <FieldInput step="0.01" type="number" {...register('amount', { valueAsNumber: true })} />
-            </FormField>
-
-            <FormField label="Data" error={errors.date?.message}>
-              <FieldInput type="date" {...register('date')} />
-            </FormField>
-
-            <FormField label="Forma de pagamento" error={errors.paymentType?.message}>
-              <Controller
-                control={control}
-                name="paymentType"
-                render={({ field }) => (
-                  <FieldSelect
-                    value={Number(field.value ?? 0)}
-                    onChange={(event) => field.onChange(Number(event.target.value))}
-                  >
-                    {paymentTypeOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </FieldSelect>
-                )}
-              />
-            </FormField>
-
-            <div className="md:col-span-2">
-              <FormField label="Descrição" error={errors.description?.message}>
-                <FieldTextarea placeholder="Contexto rápido sobre essa despesa" {...register('description')} />
-              </FormField>
-            </div>
-
-            <div className="md:col-span-2">
-              <FormField label={editingExpense ? 'Novo anexo opcional' : 'Anexo opcional'}>
-                <label className="flex cursor-pointer flex-col gap-2 rounded-2xl border border-dashed border-amber-300 bg-[#efe2c8]/72 px-4 py-4 text-sm text-slate-600 transition hover:border-amber-400 hover:bg-[#f3e7cf]/86 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-amber-400/60">
-                  <span className="font-medium text-slate-800 dark:text-slate-100">
-                    {attachmentFile
-                      ? `Arquivo selecionado: ${attachmentFile.name}`
-                      : 'Selecione uma imagem, PDF ou comprovante para vincular à despesa'}
-                  </span>
-                  <span className="text-xs text-slate-500 dark:text-slate-400">
-                    O arquivo será enviado automaticamente após salvar a despesa.
-                  </span>
-                  <input
-                    className="hidden"
-                    onChange={(event) => setAttachmentFile(event.target.files?.[0] ?? null)}
-                    type="file"
-                  />
-                </label>
-              </FormField>
-            </div>
-
-            <div className="md:col-span-2 flex flex-wrap gap-3">
-              <PrimaryButton
-                busy={
-                  isSubmitting ||
-                  createMutation.isPending ||
-                  updateMutation.isPending ||
-                  attachmentMutation.isPending
-                }
-                type="submit"
-              >
-                {editingExpense ? 'Salvar alterações' : 'Criar despesa'}
-              </PrimaryButton>
-
-              {editingExpense ? (
-                <button
-                  className="inline-flex h-11 cursor-pointer items-center justify-center rounded-xl border border-slate-200 px-4 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-800"
-                  onClick={() => {
-                    setEditingExpense(null)
-                    setAttachmentFile(null)
-                    reset(emptyValues)
-                    pushToast('Edição cancelada.', 'info')
-                  }}
-                  type="button"
-                >
-                  Cancelar edição
-                </button>
-              ) : null}
-            </div>
-          </form>
-        </section>
-
-        <section className="rounded-[2rem] border border-sky-200/80 bg-[#edf4f7]/88 p-5 shadow-lg shadow-sky-950/5 backdrop-blur transition-colors dark:border-slate-800 dark:bg-slate-900/80 dark:shadow-black/10">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="text-xs uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">Despesa selecionada</p>
-              <h2 className="mt-2 text-2xl font-semibold text-slate-950 dark:text-white">
-                {selectedExpenseQuery.data?.title ?? 'Nada selecionado'}
-              </h2>
-            </div>
-
-            {selectedExpenseQuery.data ? (
-              <div className="flex gap-2">
-                <button
-                  className="cursor-pointer rounded-xl border border-slate-200 p-2 text-slate-500 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-800 dark:hover:text-white"
-                  onClick={() => setEditingExpense(selectedExpenseQuery.data)}
-                  type="button"
-                  title="Editar despesa"
-                >
-                  <Pencil size={18} />
-                </button>
-                <button
-                  className="cursor-pointer rounded-xl border border-rose-200 p-2 text-rose-600 transition hover:bg-rose-50"
-                  onClick={async () => {
-                    try {
-                      await deleteMutation.mutateAsync(selectedExpenseQuery.data.id)
-                    } catch (error) {
-                      pushToast(extractError(error), 'error')
-                    }
-                  }}
-                  type="button"
-                  title="Excluir despesa"
-                >
-                  <Trash2 size={18} />
-                </button>
-              </div>
-            ) : null}
-          </div>
-
-          {selectedExpenseQuery.isLoading ? <p className="mt-6 text-sm text-slate-500 dark:text-slate-400">Carregando detalhes da despesa...</p> : null}
-
-          {selectedExpenseQuery.data ? (
-            <div className="mt-6 grid gap-5">
-              <dl className="grid gap-3 rounded-3xl border border-slate-200/80 bg-[#f4f8f6]/78 p-4 text-sm dark:border-slate-700 dark:bg-slate-800">
-                <div className="flex items-center justify-between gap-3">
-                  <dt className="text-slate-500 dark:text-slate-400">Valor</dt>
-                  <dd className="font-semibold text-slate-950 dark:text-white">{formatCurrency(selectedExpenseQuery.data.amount)}</dd>
-                </div>
-                <div className="flex items-center justify-between gap-3">
-                  <dt className="text-slate-500 dark:text-slate-400">Data</dt>
-                  <dd className="font-semibold text-slate-950 dark:text-white">{formatDate(selectedExpenseQuery.data.date)}</dd>
-                </div>
-                <div className="flex items-center justify-between gap-3">
-                  <dt className="text-slate-500 dark:text-slate-400">Pagamento</dt>
-                  <dd className="font-semibold text-slate-950 dark:text-white">
-                    {paymentTypeOptions.find((option) => option.value === selectedExpenseQuery.data.paymentType)?.label}
-                  </dd>
-                </div>
-              </dl>
-
-              <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Descrição</p>
-                <p className="mt-2 rounded-3xl border border-slate-200/80 bg-[#f7faf8]/80 px-4 py-4 text-sm leading-7 text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                  {selectedExpenseQuery.data.description || 'Nenhuma descrição informada.'}
-                </p>
-              </div>
-
-              <div className="rounded-3xl border border-slate-200/80 bg-[#f4f8f6]/78 p-4 dark:border-slate-700 dark:bg-slate-800">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Anexos</p>
-                    <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-                      Envie comprovantes, prints ou notas para esta despesa.
-                    </p>
-                  </div>
-                  <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-amber-400 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-amber-300">
-                    <Paperclip size={16} />
-                    Enviar
-                    <input className="hidden" onChange={handleAttachmentChange} type="file" />
-                  </label>
-                </div>
-
-                <div className="mt-4 grid gap-3">
-                  {selectedExpenseQuery.data.attachments.map((attachment) => (
-                    <article className="rounded-2xl border border-slate-200/80 bg-[#f8fbf9]/82 px-4 py-3 dark:border-slate-700 dark:bg-slate-900" key={attachment.id}>
-                      <p className="font-semibold text-slate-900 dark:text-white">{attachment.fileName}</p>
-                      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                        {attachment.contentType} · {(attachment.sizeInBytes / 1024).toFixed(1)} KB
-                      </p>
-                    </article>
-                  ))}
-
-                  {!selectedExpenseQuery.data.attachments.length ? (
-                    <p className="rounded-2xl border border-dashed border-slate-200 px-4 py-5 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
-                      Nenhum anexo ainda para esta despesa.
-                    </p>
-                  ) : null}
-                </div>
-              </div>
-
-              <div className="rounded-3xl border border-slate-200/80 bg-[#f5f9fa]/80 p-4 dark:border-slate-700 dark:bg-slate-800">
-                <div className="flex flex-wrap items-end gap-3">
-                  <div className="min-w-40 flex-1">
-                    <p className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Relatórios</p>
-                    <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-                      Exporte um consolidado mensal em PDF ou Excel.
-                    </p>
-                  </div>
-
-                  <label className="grid gap-1 text-sm text-slate-600 dark:text-slate-300">
-                    <span>Mês de referência</span>
-                    <input
-                      className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-slate-900 outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:border-emerald-500 dark:focus:ring-emerald-500/10"
-                      onChange={(event) => setReportMonth(event.target.value)}
-                      type="month"
-                      value={reportMonth}
-                    />
-                  </label>
-
-                  <button
-                    className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-900"
-                    onClick={() => void handleReportDownload('pdf')}
-                    type="button"
-                  >
-                    <FileText size={16} />
-                    PDF
-                  </button>
-
-                  <button
-                    className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-900"
-                    onClick={() => void handleReportDownload('excel')}
-                    type="button"
-                  >
-                    <FileSpreadsheet size={16} />
-                    Excel
-                  </button>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="mt-6 rounded-3xl border border-dashed border-slate-200 px-4 py-8 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
-              Selecione uma despesa na coluna da esquerda para ver detalhes e enviar arquivos.
-            </div>
-          )}
-        </section>
+            try {
+              await deleteMutation.mutateAsync(selectedExpenseQuery.data.id)
+            } catch (error) {
+              pushToast(extractError(error), 'error')
+            }
+          }}
+          onDownloadReport={(kind) => void handleReportDownload(kind)}
+          onEdit={() => {
+            if (selectedExpenseQuery.data) {
+              setEditingExpense(selectedExpenseQuery.data)
+            }
+          }}
+          onReportMonthChange={setReportMonth}
+          reportMonth={reportMonth}
+        />
       </div>
     </main>
   )
