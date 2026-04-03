@@ -30,7 +30,7 @@ export function LoginPage() {
       setServerError('')
       await login(values)
       pushToast('Login realizado com sucesso.', 'success')
-      navigate('/app')
+      navigate('/app/dashboard')
     } catch (error) {
       const message =
         error instanceof AxiosError
@@ -46,9 +46,9 @@ export function LoginPage() {
       <div className="mx-auto flex max-w-md flex-col gap-8 p-4">
         <header className="space-y-2">
           <span className="text-xs uppercase tracking-[0.24em] text-emerald-700">Entrar</span>
-          <h2 className="text-3xl font-semibold text-slate-950 dark:text-white">Acesse seu painel financeiro</h2>
+          <h2 className="text-3xl font-semibold text-slate-950 dark:text-white">Acesse seu painel operacional</h2>
           <p className="text-sm leading-6 text-slate-500 dark:text-slate-400">
-            Faça login para gerenciar despesas, atualizar lançamentos e anexar comprovantes a cada compra.
+            Faça login para configurar a família, operar o mês financeiro e acompanhar o saldo livre em tempo real.
           </p>
         </header>
 
@@ -71,6 +71,12 @@ export function LoginPage() {
             Entrar
           </PrimaryButton>
         </form>
+
+        <p className="-mt-3 text-sm text-slate-500 dark:text-slate-400">
+          <Link className="cursor-pointer font-semibold text-amber-700 transition hover:text-amber-600" to="/forgot-password">
+            Esqueci minha senha
+          </Link>
+        </p>
 
         <p className="text-sm text-slate-500 dark:text-slate-400">
           Ainda não tem conta?{' '}

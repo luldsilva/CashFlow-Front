@@ -1,278 +1,441 @@
 # Contexto da Próxima Sessão
 
-## O que foi feito hoje
+## Direção atual do produto
 
-- Base do frontend criada em `React + Vite + Tailwind + TanStack Query + React Hook Form + Zod`.
-- Integração com o backend do `CashFlow` configurada.
-- Fluxos principais já cobertos:
-  - login
-  - cadastro
-  - listagem de despesas
-  - criação de despesa
-  - edição de despesa
-  - exclusão de despesa
-  - upload de anexo
-  - exportação de relatório em PDF e Excel
-- Interface traduzida para `pt-BR`.
-- Toasts/popup de feedback adicionados para ações principais.
-- Tema escuro implementado e ajustado.
-- Tema claro refinado para reduzir excesso de branco.
-- Criação de despesa com anexo no mesmo fluxo já implementada.
-- Arquitetura de UI reorganizada para um padrão mais escalável com:
-  - `Tailwind` mantido
-  - componentes em pastas próprias
-  - extração de blocos visuais maiores da tela de despesas
-  - extração de variantes/classes compartilhadas
-- A tela principal de despesas deixou de concentrar quase toda a marcação visual:
-  - `ExpensesSidebar`
-  - `ExpenseFormCard`
-  - `ExpenseDetailsCard`
-- Componentes base também foram reorganizados em pastas próprias, seguindo uma estrutura mais previsível:
-  - `layout/AuthShell`
-  - `ui/PrimaryButton`
-  - `ui/FieldInput`
-  - `ui/FieldSelect`
-  - `ui/FieldTextarea`
-  - `ui/FormField`
-  - `ui/IconButton`
-  - `ui/PanelCard`
-- A decisão tomada foi seguir com a linha:
-  - `Tailwind + componentes por pasta + extração de blocos e variantes`
+O `CashFlow` não deve mais ser pensado como um CRUD de despesas.
 
-## Correções pendentes
+A direção alinhada agora é construir um produto de `planejamento financeiro operacional familiar`, capaz de responder com clareza:
 
-### 1. Relatórios vazios
+- quanto entrou no mês
+- quanto já saiu
+- quanto ainda está comprometido
+- quanto ainda pode ser gasto sem desorganizar o mês
+- quanto pode ser separado para investimento
 
-Problema:
-- Quando não há dados no período selecionado, os PDFs estão sendo criados vazios.
+O problema real a resolver é substituir o controle manual em caderno por uma operação mensal confiável, repetível e visível, sem depender de memória para contas pequenas, recorrências e compromissos futuros.
 
-Comportamento desejado:
-- Se não houver dados para o período informado, não queremos baixar arquivo vazio.
-- Queremos exibir a mensagem padrão do sistema informando que não há dados para o período.
+## Contexto real de uso que está guiando o produto
 
-Observação:
-- Revisar tanto `PDF` quanto `Excel`.
-- Confirmar se a API está retornando `204 NoContent` corretamente em todos os cenários.
-- Garantir que o frontend trate isso sem iniciar download vazio.
+O cenário de referência atual é o de uma família de 3 pessoas:
 
-### 2. Toast duplicado na criação com anexo
+- casal
+- 1 filho com menos de 1 ano
+- renda concentrada em fluxo `PJ`
+- renda com alguma variação mensal
 
-Problema:
-- Ao criar uma despesa com anexo, hoje aparecem dois feedbacks:
-  - despesa criada com sucesso
-  - arquivo anexado com sucesso
+Compromissos e características do fluxo:
 
-Comportamento desejado:
-- Manter só o feedback principal da criação da despesa.
-- Não mostrar o toast separado de anexo quando ele fizer parte do fluxo de criação.
+- aluguel + condomínio no dia `10`
+- demais contas entre os dias `15` e `20`
+- contas fixas recorrentes
+- contas recorrentes variáveis, como imposto `PJ`, energia e gás
+- pequenas despesas recorrentes e assinaturas que podem passar despercebidas
+- cartão de crédito com impacto no caixa do mês atual e do próximo
 
-Observação:
-- O toast de anexo continua fazendo sentido quando o usuário anexa arquivo depois, na despesa já existente.
+O objetivo imediato do produto é responder:
 
-## Próximas frentes de produto e UX
+- ainda há dinheiro no mês?
+- quanto está realmente livre?
 
-### 1. Melhorar design e identidade visual
+O objetivo seguinte é:
 
-Queremos revisar:
-- direção visual mais consistente
-- cores
-- hierarquia visual
-- sensação menos genérica de dashboard
-- possível definição futura de nome/logo/branding
+- separar parte do valor livre para investimentos mensais
 
-Objetivo:
-- deixar a interface com mais cara de produto real e menos cara de base técnica inicial
+Expansões futuras:
 
-### 2. Reavaliar telas e fluxos
+- Open Finance
+- leitura mais ampla da vida financeira
+- consolidação automática de dados
+- eventual visão de dívidas e passivos
 
-Queremos rever:
-- o desenho das telas atuais
-- a organização das informações
-- a clareza dos fluxos principais
-- o que deve virar dashboard
-- o que deve virar cadastro/configuração
+## Prioridade de produto
 
-### 3. Evoluir o produto para renda vs gastos
+A prioridade ficou definida nesta ordem:
 
-Dor real a ser resolvida:
-- controlar renda da família versus o que está sendo gasto
+1. `Controle financeiro familiar`
+2. `Controle e planejamento de investimentos`
+3. `Integrações externas e inteligência financeira ampliada`
 
-Queremos pensar em suporte para:
-- registro de renda
-- comparação entre renda e despesas
-- visão consolidada por período
-- dashboards financeiros
-- talvez gamificação de alguns fluxos
+Decisão importante:
 
-### 4. Novos dados que o sistema deve suportar
+- não fazer um MVP pequeno demais
+- partir para um MVP mais encorpado, desde que já seja utilizável no próximo ciclo real de contas
+- o MVP precisa substituir o caderno com segurança
 
-Precisamos considerar modelagem para:
-- valor da renda
-- periodicidade da renda:
-  - diário
-  - semanal
-  - quinzenal
-  - mensal
-  - talvez outros períodos
-- gastos fixos
-- gastos variáveis
-- possibilidade de prever despesas recorrentes e comportamento futuro
+## Regras de negócio centrais
 
-## Análise de estilização atual
+### 1. Saldo bruto vs saldo livre
 
-### Situação atual
+A regra mais importante do domínio é separar claramente:
 
-Hoje o frontend está com muita estilização aplicada diretamente nas `className` dos componentes `tsx`, em vez de separar em arquivos próprios por componente como:
+- dinheiro que parece disponível
+- dinheiro que já está comprometido
 
-- `Component.tsx`
-- `Component.css`
-- marcação/estrutura separada por bloco mais isolado
+O produto precisa mostrar com clareza a diferença entre:
 
-### Por que isso aconteceu
+- `saldo bruto`
+- `saldo comprometido`
+- `saldo livre`
+- `valor possível para investir`
 
-Isso aconteceu principalmente por causa da stack escolhida:
+### 2. Planejado, previsto e realizado
+
+O sistema deve distinguir:
+
+- `planejado`
+- `previsto`
+- `realizado`
+
+Isso vale tanto para:
+
+- entradas
+- saídas
+- aportes
+
+Toda movimentação precisa ter:
+
+- competência
+- contexto temporal
+- impacto no mês atual ou futuro
+
+### 3. Recorrência nativa
+
+Recorrência não é detalhe. Precisa ser parte nativa do produto para:
+
+- renda
+- contas fixas
+- contas recorrentes variáveis
+- assinaturas
+- pequenos recorrentes
+- aportes planejados
+
+Contas como imposto `PJ`, gás e energia não são totalmente fixas, mas também não são totalmente imprevisíveis.
+
+O sistema precisa suportar:
+
+- valor esperado
+- ajuste posterior
+- histórico por competência
+
+### 4. Cartão de crédito como entidade própria
+
+Cartão de crédito não pode ser tratado como despesa simples.
+
+Precisa refletir:
+
+- compras
+- fechamento
+- vencimento
+- impacto no caixa do mês atual
+- impacto no caixa do mês seguinte
+
+## Planejamento por percentuais
+
+O produto deve incorporar planejamento por percentuais como uma camada importante da experiência.
+
+Esse modelo:
+
+- não será regra rígida
+- será um guia configurável
+- deve apoiar organização financeira e educação financeira aplicada
+
+Exemplo discutido:
+
+- `50%` essenciais/fixos
+- `10%` educação
+- `20%` investimentos
+- `10%` aposentadoria
+- `10%` livre
+
+Esses percentuais precisam ser:
+
+- sugeridos no onboarding
+- personalizáveis
+- acompanhados ao longo do mês
+
+O sistema deve comparar:
+
+- planejado por bucket
+- realizado por bucket
+
+## Onboarding e experiência principal
+
+O onboarding passa a ser peça central da experiência.
+
+O usuário não deve cair em tela vazia. O produto precisa começar entendendo:
+
+- composição familiar
+- renda média
+- variabilidade da renda
+- periodicidade principal da renda
+- modelo inicial de planejamento
+- percentuais desejados
+- fontes de renda
+- contas fixas e recorrentes
+- cartões e vencimentos
+
+Depois disso, o usuário entra em um dashboard principal já configurado para o mês.
+
+## Dashboard principal
+
+O dashboard precisa existir desde cedo e ser operacional, não apenas analítico.
+
+Indicadores mínimos:
+
+- entrou no mês
+- saiu no mês
+- comprometido até o fim do mês
+- livre para gastar
+- livre para investir
+
+Blocos importantes ao redor disso:
+
+- próximos vencimentos
+- contas atrasadas
+- status do cartão
+- assinaturas e pequenos recorrentes
+- aderência ao modelo percentual
+- comparação com mês anterior, quando possível
+
+## Frente de investimentos
+
+Investimentos já fazem parte da visão do produto, mas seguem como segunda prioridade.
+
+Estratégia inicial mais pragmática:
+
+- meta mensal de aporte
+- aporte planejado
+- aporte realizado
+- posição por ativo
+- classificação por tipo
+- leitura simples de evolução patrimonial
+
+Tipos iniciais de ativo:
+
+- renda fixa
+- `FIIs`
+- ações
+- `ETFs`
+- caixa
+
+Direção prática:
+
+- começar com entrada manual
+- depois enriquecer com API de mercado
+
+Observação já alinhada:
+
+- a `B3` tem portal de APIs, mas o caminho não parece simples para um MVP de pessoa física
+- uma alternativa prática futura para cotações de ativos brasileiros pode ser a `brapi`
+- `Open Finance` faz sentido como fase posterior, por exigir mais consentimento, integração institucional e cuidado regulatório
+
+## Roadmap alinhado com o backend
+
+### Fase 1A. Setup financeiro inicial
+
+- composição familiar
+- renda
+- modelo de planejamento
+- buckets percentuais
+- categorias principais
+
+### Fase 1B. Motor de compromissos do mês
+
+- obrigações financeiras por competência
+- vencimentos
+- recorrência
+- status previsto, pago e ajustado
+
+### Fase 1C. Resumo financeiro do mês e dashboard operacional
+
+- entrada prevista
+- saída paga
+- comprometido
+- livre para gastar
+- livre para investir
+- próximos vencimentos
+- leitura por bucket
+
+### Fase 1D. Cartão de crédito e fatura do ciclo
+
+- cadastro de cartão
+- fechamento
+- vencimento
+- fatura por competência
+- impacto no ciclo
+
+### Fase 1E. Fechamento e revisão mensal
+
+- fechar o mês
+- snapshot consolidado
+- observações do ciclo
+- revisão posterior do mês
+
+### Fase 2A. Plano de investimentos
+
+- meta mensal de aporte
+- planejamento de investimento
+- aporte planejado
+- aporte realizado
+
+### Fase 2B. Ativos e posições
+
+- cadastro de ativos
+- tipo de ativo
+- posição consolidada por ativo
+
+### Fase 2C. Leitura da carteira
+
+- total investido
+- distribuição por tipo
+- evolução patrimonial
+
+### Fase 3. Integrações e enriquecimento externo
+
+- Open Finance
+- cotações externas
+- consolidação automática
+- leitura ampliada de situação financeira e passivos
+
+## Implicações para o frontend
+
+O frontend precisa deixar de girar em torno de uma tela principal de despesas.
+
+A próxima evolução de UX deve reorganizar o produto ao redor de:
+
+- onboarding
+- dashboard operacional do mês
+- entradas de renda
+- obrigações recorrentes
+- cartão e faturas
+- buckets percentuais
+- visão de saldo comprometido e saldo livre
+
+Ou seja:
+
+- o centro da experiência não é mais cadastrar despesa isolada
+- o centro da experiência é operar e entender o mês financeiro da família
+
+## Base técnica já existente no frontend
+
+O projeto atual continua em:
 
 - `React`
+- `TypeScript`
+- `Vite`
 - `Tailwind CSS`
+- `TanStack Query`
+- `React Hook Form`
+- `Zod`
 
-Com `Tailwind`, o padrão mais comum de mercado é justamente compor estilo direto no `tsx` com classes utilitárias. A ideia é:
+Também já existem:
 
-- manter estrutura e estilo próximos
-- evitar alternância constante entre `tsx` e `css`
-- reduzir naming manual de classes
-- acelerar prototipação e ajustes de interface
-- facilitar composição visual rápida por estado, variante e responsividade
+- integração com backend
+- autenticação
+- fluxos básicos de despesas
+- upload de anexo
+- exportação de relatório
+- interface em `pt-BR`
+- tema escuro e claro
+- reorganização parcial da UI com componentes por pasta
 
-### Vantagens dessa abordagem
+Essa base continua útil, mas precisa ser reinterpretada à luz da nova direção do produto.
 
-- rapidez para construir telas
-- menor custo inicial de organização visual
-- responsividade e estados (`hover`, `dark`, `focus`) ficam visíveis no mesmo lugar
-- menos risco de conflito de CSS global
-- boa aderência ao ecossistema moderno com `Tailwind`
+## Pendências técnicas já conhecidas no frontend
 
-### Desvantagens percebidas
+Continuam pendentes:
 
-Essa abordagem também tem custos reais, especialmente no seu caso:
+1. Corrigir relatórios vazios:
+- impedir download vazio de `PDF` e `Excel`
+- tratar corretamente cenários de `204 NoContent`
 
-- arquivos `tsx` ficam longos e visualmente pesados
-- leitura da estrutura da tela fica pior
-- manutenção de design mais refinado fica cansativa
-- repetição de blocos de classes começa a crescer
-- sensação de “estilo inline” incomoda quem prefere separação por responsabilidade visual
-
-### Minha opinião técnica
-
-O problema aqui não é exatamente usar `Tailwind`. O problema é usar `Tailwind` sem uma camada de composição suficiente.
-
-Hoje o frontend está em um ponto intermediário:
-
-- bom para prototipar
-- ruim para evoluir design com mais sofisticação
-
-Se o projeto continuar crescendo, eu não recomendaria migrar para um modelo de `html/css` totalmente separado como se fosse um frontend tradicional antigo. Isso costuma perder parte da produtividade que o `React + Tailwind` dá.
-
-Eu recomendaria um meio-termo mais maduro:
-
-1. manter `Tailwind`
-2. reduzir classes repetidas criando componentes visuais menores
-3. extrair blocos reutilizáveis
-4. centralizar tokens visuais
-5. usar CSS separado só quando realmente fizer sentido
-
-### Direção sugerida
-
-Em vez de mudar tudo para `tsx + css` por componente agora, a direção mais saudável seria:
-
-- criar componentes como:
-  - `panel-card`
-  - `section-header`
-  - `expense-list-item`
-  - `stat-card`
-  - `surface`
-  - `icon-button`
-- mover combinações longas de classe para helpers/componentes
-- definir tokens visuais para:
-  - cores
-  - fundos
-  - bordas
-  - sombras
-  - estados
-- deixar CSS separado para:
-  - animações
-  - padrões visuais mais complexos
-  - temas
-  - casos onde a utilidade inline piora a leitura
-
-### Decisão sugerida para a próxima sessão
-
-Revisar se queremos evoluir o frontend para um padrão mais organizado de UI, mantendo `Tailwind`, mas com:
-
-- menos classes longas dentro das páginas
-- mais componentes visuais reutilizáveis
-- melhor separação entre layout, comportamento e aparência
-
-### Decisão efetivamente tomada hoje
-
-Essa direção foi confirmada e já começou a ser aplicada.
-
-Seguiremos com:
-
-- `Tailwind`
-- componentes por pasta
-- extração de blocos maiores de interface
-- extração de variantes visuais e classes compartilhadas
-
-Não vamos migrar agora para uma separação tradicional no estilo `tsx + css` para tudo.
-Se houver CSS separado no futuro, será apenas onde fizer sentido real:
-
-- animações
-- temas
-- padrões visuais mais complexos
-- casos em que o JSX ficar menos legível com utilitárias
+2. Corrigir toast duplicado na criação com anexo:
+- manter só o feedback principal da criação da despesa
+- preservar toast de anexo apenas quando o anexo acontecer depois, em despesa já existente
 
 ## Mobile
 
-### Contexto discutido hoje
+A versão mobile continua no radar, mas ficou definido que ela vem `depois da entrega do MVP web`.
 
-O mobile não será iniciado agora, mas ficou definido como tema da próxima conversa.
+Decisão atual:
 
-Pontos alinhados:
+- não iniciar mobile agora
+- primeiro entregar o MVP principal com operação financeira familiar funcionando
+- só depois discutir e planejar a versão mobile
 
-- existe interesse real em uma versão mobile por utilidade no dia a dia
-- o objetivo não é só custo, mas também estudo e aprendizado
-- o uso em celular e tablet faz sentido para o produto
-- a possibilidade de `iOS` continua em aberto, mesmo sem `Mac`, com limitações práticas no ciclo local
+Quando esse assunto voltar, a conversa deve considerar:
 
-### Direção inicial para a próxima sessão
+- `React Native` como direção provável
+- suporte a celular e tablet
+- reaproveitamento de domínio, API e decisões de produto já consolidadas no web
 
-Conversar sobre o MVP mobile antes de executar.
+## Particularidades do roadmap de frontend
 
-Assuntos a discutir:
+O roadmap do frontend deve espelhar o backend na lógica de produto, mas pode carregar fases ou anotações próprias de experiência.
 
-- `React Native` como direção principal
-- suporte a tablet
-- limitações reais para `iOS` sem `Mac`
-- como dividir responsabilidades entre web e mobile
-- o que faz sentido reaproveitar do domínio, da API e da estrutura atual
+Por enquanto, as particularidades assumidas no front são:
 
-## Perguntas para orientar a próxima sessão
+- prioridade em `responsividade web` durante toda a Fase 1
+- navegação orientada por dashboard, setup, obrigações, cartões e fechamento
+- estados vazios, loading, erro e sucesso como parte do escopo visual
+- camada `mobile nativa` tratada como frente posterior ao MVP web
 
-- Como deve ser o modelo de `renda` no domínio?
-- Renda será individual, familiar, ou ambos?
-- Gastos fixos e variáveis devem ser categorias ou tipos próprios?
-- O dashboard inicial deve focar em:
-  - saldo do mês
-  - comprometimento da renda
-  - previsão até o fim do mês
-  - evolução histórica
-- Existe espaço para gamificação sem atrapalhar a seriedade do produto?
+## O que foi feito hoje no frontend
 
-## Prioridade sugerida para a próxima sessão
+Hoje o frontend foi reposicionado para refletir a Fase 1 já implementada no backend.
 
-1. Conversar sobre a frente mobile e delimitar a estratégia inicial do MVP mobile.
-2. Corrigir download de relatório vazio.
-3. Corrigir toast duplicado na criação com anexo.
-4. Revisar ajustes de frontend e UX que ainda ficaram pendentes.
-5. Definir como modelar `renda`, recorrência e visão familiar.
-6. Só depois evoluir design/dashboard com base nessas decisões.
+Entregas concluídas:
+
+- alinhamento do roadmap do front com o faseamento do backend
+- criação do contexto de fases em `docs/phase-delivery-context.md`
+- reorganização do app para um shell principal orientado por produto, e não mais por uma única tela de despesas
+- criação das rotas e telas principais da Fase 1:
+  - dashboard operacional
+  - setup financeiro inicial
+  - obrigações do mês
+  - cartões e faturas
+  - fechamento e revisão mensal
+- criação do cliente HTTP e dos tipos da Fase 1 para integração com o backend
+- ajuste do posicionamento textual das telas de autenticação
+
+Também foram implementados os fluxos de senha:
+
+- `esqueci minha senha` em `/forgot-password`
+- `redefinir senha` em `/reset-password?token=...`
+- `alterar senha autenticada` em `/app/settings/security`
+
+Validação concluída hoje:
+
+- `npm run build` executado com sucesso após as mudanças
+
+## Pendências imediatas para testar amanhã
+
+Validar manualmente os fluxos recém-implementados:
+
+- solicitar reset em `/forgot-password`
+- capturar o token/link gerado pelo backend em ambiente local
+- redefinir a senha em `/reset-password?token=...`
+- testar troca autenticada de senha em `/app/settings/security`
+- confirmar mensagens de erro para:
+  - token ausente
+  - token inválido ou expirado
+  - senha atual inválida
+  - confirmação divergente
+
+Também vale confirmar amanhã:
+
+- se os contratos reais das respostas do backend batem com os envelopes assumidos no frontend para listas
+- se todos os endpoints da Fase 1 estão respondendo no formato esperado em ambiente local
+
+## Resumo executivo
+
+Em resumo, a posição do produto deixa de ser `controle de gastos` e passa a ser:
+
+`organizar a vida financeira da família, mostrar o que está comprometido, o que está livre e o que pode virar investimento`
+
+## Ponto de partida sugerido para a próxima sessão
+
+1. Testar manualmente os fluxos de senha implementados hoje.
+2. Validar integração real da Fase 1 com o backend em ambiente local.
+3. Iniciar a `Fase 2` no frontend, começando por `2A. Plano de investimentos`.
+4. Manter mobile fora do escopo até o MVP web estar entregue.

@@ -25,26 +25,26 @@ export function AuthShell({ children }: PropsWithChildren) {
                 </button>
               </div>
               <h1 className="mt-6 max-w-lg text-4xl font-semibold leading-tight">
-                Controle financeiro pessoal com um fluxo simples no dia a dia.
+                Planejamento financeiro familiar para operar o mês com clareza.
               </h1>
               <p className="mt-4 max-w-xl text-sm leading-7 text-slate-300">
-                Comece com um MVP prático: faça login, registre despesas, acompanhe valores e mantenha
-                comprovantes anexados a cada lançamento.
+                O CashFlow deixa de ser uma tela de despesas isoladas e passa a mostrar o que entrou, o que saiu,
+                o que está comprometido e o que continua livre.
               </p>
             </div>
 
             <div className="grid gap-3 text-sm text-slate-300 sm:grid-cols-3">
               <article className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                <p className="text-2xl font-semibold text-white">API</p>
-                <p className="mt-2">Autenticação JWT com rotas protegidas para despesas.</p>
+                <p className="text-2xl font-semibold text-white">Setup</p>
+                <p className="mt-2">Família, renda, buckets percentuais e categorias centrais.</p>
               </article>
               <article className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                <p className="text-2xl font-semibold text-white">Arquivos</p>
-                <p className="mt-2">Anexos armazenados com MinIO e vinculados às despesas.</p>
+                <p className="text-2xl font-semibold text-white">Operação</p>
+                <p className="mt-2">Compromissos do mês, dashboard operacional e saldo livre.</p>
               </article>
               <article className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                <p className="text-2xl font-semibold text-white">Evolução</p>
-                <p className="mt-2">Frontend preparado para evoluir para mobile depois.</p>
+                <p className="text-2xl font-semibold text-white">Ciclo</p>
+                <p className="mt-2">Cartões, faturas e fechamento mensal antes da camada de investimentos.</p>
               </article>
             </div>
           </div>

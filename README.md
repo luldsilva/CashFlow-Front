@@ -1,6 +1,6 @@
 # CashFlow Front
 
-Frontend MVP do CashFlow em React + TypeScript + Vite.
+Frontend do CashFlow em React + TypeScript + Vite, agora reposicionado para a Fase 1 de planejamento financeiro operacional familiar.
 
 ## Stack
 
@@ -22,12 +22,25 @@ Isso permite rodar o frontend separado sem mexer em CORS no backend agora.
 
 - cadastro
 - login
-- listagem de despesas
-- criação de despesa
-- edição de despesa
-- exclusão de despesa
-- visualização de detalhes
-- upload de anexo por despesa
+- dashboard mensal
+- setup financeiro inicial
+- obrigações financeiras por competência
+- cartões e faturas
+- fechamento e revisão mensal
+
+## Roadmap refletido no front
+
+O frontend agora acompanha o faseamento principal do backend:
+
+- `1A` setup financeiro inicial
+- `1B` motor de compromissos do mês
+- `1C` dashboard operacional do mês
+- `1D` cartões e faturas
+- `1E` fechamento e revisão mensal
+
+Particularidade atual do front:
+
+- a fase mobile continua registrada como frente posterior ao MVP web
 
 ## Como rodar
 
